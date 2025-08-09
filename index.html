@@ -15,6 +15,9 @@
     html, body { margin: 0; background: #f6f7fb; }
     .app { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px; }
     .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; }
+    .hidden { display: none !important; }
+    .mobile-tabs { display: none; }
+    .mobile-tabs .seg { border: 0; }
     .card h2 { margin: 0; padding: 12px 16px; border-bottom: 1px solid #eef1f6; font-size: 18px; }
     .card .body { padding: 14px 16px; }
     label { display: block; font-size: 13px; margin: 10px 0 4px; color: #333; }
@@ -125,6 +128,19 @@
       .app { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
       .card h2 { font-size: 16px; }
       input, select, textarea { font-size: 16px; } /* iOS zoom avoidance */
+      /* Mobile tabs to switch between Vorschau und Eingaben */
+      .mobile-tabs { position: sticky; top: 0; z-index: 20; background: #fff; display: flex; gap: 8px; padding: 8px 8px 0; border-bottom: 1px solid var(--line); }
+      .mobile-tabs .seg { flex: 1 1 auto; padding: 10px 12px; border: 1px solid var(--line); border-bottom: 0; border-radius: 10px 10px 0 0; background: #f8faff; font-weight: 600; }
+      .mobile-tabs .seg.active { background: #fff; color: var(--header); }
+
+      /* Vollbreite Vorschau auf Handy */
+      .preview { padding: 0; }
+      .doc { width: 100%; min-height: auto; box-shadow: none; }
+      .paper { padding: 12mm 8mm; }
+      .title { margin: 8mm 0 4mm; }
+      .meta { grid-template-columns: 1fr 1fr; gap: 4mm; }
+      .meta-grid { font-size: 12px; }
+
       .preview { padding: 8px; }
       .paper { padding: 14mm; }
       .recipient { font-size: 20px; }
@@ -183,8 +199,12 @@
   </style>
 </head>
 <body>
+  <div class="mobile-tabs mobile-only">
+    <button class="seg active" id="tabPreview">Vorschau</button>
+    <button class="seg" id="tabInputs">Eingaben</button>
+  </div>
   <div class="app">
-    <div class="card">
+    <div class="card" id="cardInputs">
       <h2>Eingaben</h2>
       <div class="body">
         <div class="row">
@@ -339,7 +359,7 @@ BIC NORSDE51XXX</textarea>
       </div>
     </div>
 
-    <div class="card preview">
+    <div class="card preview" id="cardPreview">
       <h2>Vorschau</h2>
       <div class="body">
         <div class="doc posrel" id="doc">
@@ -420,6 +440,39 @@ BIC NORSDE51XXX</textarea>
   </template>
 
   <script>
+    // Mobile view toggle between preview and inputs
+    function setMobileView(view){
+      const isMobile = window.matchMedia('(max-width: 900px)').matches
+      if(!isMobile){
+        const ci = document.getElementById('cardInputs');
+        const cp = document.getElementById('cardPreview');
+        if(ci) ci.classList.remove('hidden')
+        if(cp) cp.classList.remove('hidden')
+        const ti = document.getElementById('tabInputs');
+        const tp = document.getElementById('tabPreview');
+        if(ti) ti.classList.remove('active')
+        if(tp) tp.classList.add('active')
+        return
+      }
+      if(view === 'inputs'){
+        document.getElementById('cardInputs').classList.remove('hidden')
+        document.getElementById('cardPreview').classList.add('hidden')
+        document.getElementById('tabInputs').classList.add('active')
+        document.getElementById('tabPreview').classList.remove('active')
+      } else {
+        document.getElementById('cardInputs').classList.add('hidden')
+        document.getElementById('cardPreview').classList.remove('hidden')
+        document.getElementById('tabPreview').classList.add('active')
+        document.getElementById('tabInputs').classList.remove('active')
+      }
+    }
+
+    // Tab events
+    const tabInputs = document.getElementById('tabInputs')
+    const tabPreview = document.getElementById('tabPreview')
+    if(tabInputs) tabInputs.addEventListener('click', ()=> setMobileView('inputs'))
+    if(tabPreview) tabPreview.addEventListener('click', ()=> setMobileView('preview'))
+    window.addEventListener('resize', ()=> setMobileView('preview'))
     const $ = id => document.getElementById(id)
 
     function nf(){
@@ -687,6 +740,7 @@ BIC NORSDE51XXX</textarea>
     $('docDate').valueAsNumber = Date.now() - new Date().getTimezoneOffset()*60000
     addRow()
     render()
+    setMobileView('preview')
   </script>
 </body>
   <script>
