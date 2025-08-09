@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Angebot Generator – Referenzlayout</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <!-- iOS PWA helpers -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root { font-family: system-ui, Arial, Helvetica, sans-serif; color-scheme: light; }
+    html, body { margin: 0; background: #f6f7fb; }
+    .app { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; }
+    .card h2 { margin: 0; padding: 12px 16px; border-bottom: 1px solid #eef1f6; font-size: 18px; }
+    .card .body { padding: 14px 16px; }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; color: #333; }
+    input, select, textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #d5dbe7; border-radius: 8px; font-size: 14px; background: #fff; }
+    textarea { min-height: 72px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { cursor: pointer; padding: 10px 14px; border: 0; border-radius: 10px; font-weight: 600; }
+    .primary { background: #0f6ad6; color: #fff; }
+    .ghost { background: #eef4ff; color: #0f6ad6; }
+    .danger { background: #ffeaea; color: #c40000; }
+    .muted { color: #6b7280; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #eef1f6; padding: 8px; text-align: left; vertical-align: top; }
+
+    /* Vorschau A4 Referenzlayout */
+    .preview { padding: 24px; }
+    .doc { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; color: #111; box-shadow: 0 0 0.5mm rgba(0,0,0,.06); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .paper { padding: 22mm; }
+    .head { display: grid; grid-template-columns: 1fr 1fr; align-items: start; column-gap: 12mm; }
+    .sender { font-size: 12px; color: #111; margin-bottom: 10mm; }
+    .recipient { font-size: 22px; line-height: 1.25; font-weight: 700; white-space: pre-wrap; }
+    .meta-grid { justify-self: end; text-align: left; font-size: 14px; }
+    .meta-grid table { border-collapse: collapse; }
+    .meta-grid td { padding: 3px 0 3px 12px; }
+    .meta-grid td.label { color: #111; }
+    .meta-grid td.value { text-align: right; min-width: 140px; font-weight: 600; }
+    .firm-name { font-size: 22px; font-weight: 800; letter-spacing: .2px; }
+    .firm-line { margin-top: 6mm; font-size: 11px; color: #4b5563; text-decoration: underline; text-underline-offset: 2px; }
+    .right-box { justify-self: end; text-align: right; font-size: 12px; color: #111; }
+    .title { margin: 16mm 0 6mm; font-size: 20px; font-weight: 700; }
+    .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; font-size: 12px; margin-bottom: 8mm; }
+    .intro { font-size: 12px; line-height: 1.5; margin-bottom: 8mm; white-space: pre-wrap; }
+
+    .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tbl th { background: #f3f6fb; border: 1px solid #dfe6f2; }
+    .tbl td { border: 1px solid #e6edf7; }
+    .tbl th, .tbl td { padding: 7px 8px; }
+    .row-section td { font-weight:700; background:#f9fbff; border-color:#dfe6f2; }
+    .row-subtotal td { font-weight:700; text-align:right; }
+    .row-subtotal td:first-child { text-align:left; }
+    .col-pos[contenteditable] { text-align:right; }
+    .col-pos { width: 28px; text-align: right; }
+    .col-qty { width: 70px; text-align: right; }
+    .col-unit { width: 70px; }
+    .col-price { width: 110px; text-align: right; }
+    .col-total { width: 120px; text-align: right; }
+    .xdel { border: 0; background: transparent; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 4px 0 0; color: #c40000; }
+    .poswrap { display: inline-flex; align-items: center; gap: 6px; }
+
+    .sumwrap { margin-top: 6mm; margin-left: auto; width: 60mm; font-size: 12px; }
+    .sumrow { display: flex; justify-content: space-between; padding: 4px 0; }
+    .sumrow.bold { font-weight: 700; font-size: 13px; }
+    .note { margin-top: 10mm; font-size: 12px; }
+    .greet { margin-top: 18mm; font-size: 12px; }
+    .greet .spacer { height: 18mm; }
+    .footer { position: absolute; left: 22mm; right: 22mm; bottom: 18mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8mm; font-size: 11px; color: #374151; }
+    .footer div { white-space: pre-wrap; }
+
+    .posrel { position: relative; }
+    /* ===== Visual polish (no layout changes) ===== */
+    :root{
+      --ink:#111827;           /* primary text */
+      --muted:#6b7280;         /* secondary text */
+      --line:#e6eaf2;          /* light border */
+      --line-strong:#cfd6e6;   /* strong border */
+      --header:#0b1220;        /* headings */
+      --tint:#f5f8ff;          /* subtle section bg */
+      --tint-strong:#eef2f9;   /* table head bg */
+    }
+    html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+    .doc { color: var(--ink); }
+
+    /* Kopf */
+    .sender { color: var(--muted); letter-spacing: .2px; }
+    .recipient { color: var(--ink); letter-spacing: .2px; }
+    .title { color: var(--header); letter-spacing: .3px; font-weight: 800; }
+
+    /* Meta rechts */
+    .meta-grid td.label { color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-size: 11px; }
+    .meta-grid td.value { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 700; }
+
+    /* Tabelle */
+    .tbl th { background: var(--tint-strong); border-color: var(--line-strong); color: var(--header); }
+    .tbl td { border-color: var(--line); }
+    .tbl tbody tr:nth-child(even) td { background: #fafbff; }
+    .row-section td { background: var(--tint); color: var(--header); }
+
+    /* Summenblock */
+    .sumwrap { border-top: 2px solid var(--line-strong); padding-top: 6mm; }
+    .sumrow span:first-child { color: var(--muted); }
+    .sumrow.bold { font-size: 14px; }
+    .sumrow.bold span:last-child { font-weight: 800; color: var(--header); }
+
+    /* Footer */
+    .footer { color: var(--muted); }
+
+    /* Print fidelity for backgrounds */
+    @media print {
+      .tbl th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .row-section td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tbl tbody tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ===== Mobile responsive tweaks ===== */
+    .mobile-only { display: none; }
+    @media (max-width: 900px) {
+      html, body { background: #ffffff; }
+      .app { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
+      .card h2 { font-size: 16px; }
+      input, select, textarea { font-size: 16px; } /* iOS zoom avoidance */
+      .preview { padding: 8px; }
+      .paper { padding: 14mm; }
+      .recipient { font-size: 20px; }
+      .meta-grid { font-size: 13px; }
+      .tbl { font-size: 13px; }
+      .tbl th, .tbl td { padding: 10px 8px; }
+      .footer { position: static; margin-top: 14mm; grid-template-columns: 1fr; gap: 4mm; }
+      .mobile-only { display: block; }
+      /* Sticky action bar */
+      .mobile-bar { position: sticky; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,.95); backdrop-filter: saturate(140%) blur(6px); border-top: 1px solid var(--line); display: flex; gap: 8px; padding: 8px; z-index: 10; }
+      .mobile-bar .btn { flex: 1 1 auto; }
+      /* Make table easier to scroll on small screens */
+      #editTable { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      #editTable table { min-width: 600px; }
+    }
+    @page { size: A4; margin: 0; }
+
+    @media print {
+      body { background: white; }
+      .app { display: block; padding: 0; }
+      .card:not(.preview) { display: none; }
+      .preview { padding: 0; }
+      .preview > h2 { display: none; }
+      .doc { box-shadow: none; margin: 0; }
+    }
+
+    /* Scrollen ermöglichen, wenn Tabelle breiter als der Bildschirm ist */
+    .positionen-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* sanftes Scrollen auf iPhone/iPad */
+    }
+
+    /* Mindestbreite, damit alle Spalten sichtbar bleiben */
+    .positionen-container table {
+      min-width: 760px; /* kompakter, mehr Spalten direkt sichtbar */
+      border-collapse: collapse;
+    }
+
+    /* Positions editor UX improvements */
+    .positionen-container { max-height: 320px; min-height: 160px; overflow-y: auto; }
+    .positionen-container thead th { position: sticky; top: 0; z-index: 1; background: var(--tint-strong); }
+    .positionen-container::-webkit-scrollbar { height: 10px; }
+    .positionen-container::-webkit-scrollbar-track { background: #f0f3f8; border-radius: 8px; }
+    .positionen-container::-webkit-scrollbar-thumb { background: #c6cfde; border-radius: 8px; }
+    .positionen-container::-webkit-scrollbar-thumb:hover { background: #aeb8cc; }
+
+    /* Kompaktere Darstellung nur im Editor (nicht in der Vorschau) */
+    #editTable { font-size: 12px; }
+    #editTable th, #editTable td { padding: 6px 6px; }
+    #editTable th:nth-child(1), #editTable td:nth-child(1){ width: 56px; }
+    #editTable th:nth-child(3), #editTable td:nth-child(3){ width: 80px; text-align: right; }
+    #editTable th:nth-child(4), #editTable td:nth-child(4){ width: 80px; }
+    #editTable th:nth-child(5), #editTable td:nth-child(5){ width: 100px; text-align: right; }
+    #editTable th:nth-child(6), #editTable td:nth-child(6){ width: 110px; text-align: right; }
+    .poswrap { gap: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h2>Eingaben</h2>
+      <div class="body">
+        <div class="row">
+          <div>
+            <label>Dokumenttyp</label>
+            <select id="docType">
+              <option value="angebot" selected>Angebot</option>
+              <option value="rechnung">Rechnung</option>
+            </select>
+          </div>
+          <div>
+            <label>Mehrwertsteuer in Prozent</label>
+            <input id="vatRate" type="number" min="0" step="1" value="19" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Angebotsnummer oder Rechnungsnummer</label>
+            <input id="docNumber" placeholder="1001" />
+          </div>
+          <div>
+            <label>Kundennummer</label>
+            <input id="customerNumber" placeholder="5252" />
+          </div>
+        </div>
+
+        <div class="row" style="grid-template-columns:1fr 1fr; gap:10px">
+          <div>
+            <label>Bearbeiter</label>
+            <input id="clerk" placeholder="z B Max Mustermann" value="Shahab Shafieian M.Eng." />
+          </div>
+          <div>
+            <label>Projekt Nr.</label>
+            <input id="projectNo" placeholder="z B 2025 005" />
+          </div>
+          <div>
+            <label>Steuernr.</label>
+            <input id="taxNo" placeholder="" />
+          </div>
+          <div>
+            <label>USt IdNr.</label>
+            <input id="vatId" placeholder="DE123456789" value="DE4554966973" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Datum</label>
+            <input id="docDate" type="date" />
+          </div>
+          <div>
+            <label>Währung</label>
+            <select id="currency">
+              <option value="EUR" selected>EUR</option>
+              <option value="USD">USD</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px">Eigene Angaben</h3>
+        <label>Firmenname für Kopfzeile</label>
+        <input id="firmName" placeholder="Musterfirma GmbH" value="Shafieian Energieberatung & Consulting" />
+        <label>Adresse unter dem Firmennamen (kleine Zeile)</label>
+        <input id="firmLine" placeholder="Musterfirma GmbH – Musterstr. 8 – 77777 Ort" value="Hildegardstraße 3, 55131 Mainz" />
+        <label>Rechte Kopf Box oben</label>
+        <textarea id="rightBox">Musterfirma GmbH
+Musterstr. 8
+77777 Ort
+
+Telefon 0721 9999 10
+E Mail info@musterfirma.de</textarea>
+
+        <h3 style="margin-top:12px">Empfänger</h3>
+        <label>Empfänger Anschrift (für Kopf)</label>
+        <textarea id="recipient">Musterempfänger
+Musterstraße
+PLZ / Ort
+Land</textarea>
+        <label>Betreff</label>
+        <input id="subject" placeholder="z B Wasserschaden Erstmaßnahmen" />
+
+        <label>Anrede (für den Textteil, optional)</label>
+        <input id="salutation" placeholder="Sehr geehrte Damen und Herren," />
+
+        <h3 style="margin-top:12px">Einleitung</h3>
+        <textarea id="intro">Vielen Dank für Ihr Interesse an unseren Leistungen. Hiermit unterbreiten wir Ihnen folgendes Angebot.</textarea>
+
+        <h3 style="margin-top:12px">Positionen</h3>
+        <div class="muted">Klicken zum Bearbeiten. Bei Bedarf unten horizontal scrollen, um alle Spalten zu sehen.</div>
+        <div class="positionen-container" style="max-height:220px; border:1px solid #eef1f6; border-radius:8px; margin-top:6px;">
+          <table id="editTable">
+            <thead>
+              <tr>
+                <th style="width:60px">Pos (editierbar)</th>
+                <th>Bezeichnung</th>
+                <th style="width:100px">Menge</th>
+                <th style="width:80px">Einheit</th>
+                <th style="width:120px">Einzelpreis EUR</th>
+                <th style="width:120px">Gesamtpreis EUR</th>
+                <th style="width:1%"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
+          <button class="btn ghost" id="addItem">Position hinzufügen</button>
+          <button class="btn ghost" id="addSection">Abschnitt Titelzeile</button>
+          <button class="btn ghost" id="addSubtotal">Zwischensumme</button>
+          <button class="btn danger" id="clearItems">Alle Positionen löschen</button>
+        </div>
+
+        <h3 style="margin-top:12px">Fußtext und Bank</h3>
+        <label>Hinweis unter den Summen</label>
+        <textarea id="note">Bei Rückfragen stehen wir selbstverständlich jederzeit gerne zur Verfügung</textarea>
+        <label>Grußformel</label>
+        <textarea id="greet">Mit freundlichen Grüßen</textarea>
+
+        <div class="row">
+          <div>
+            <label>Footer linke Spalte Anschrift</label>
+            <textarea id="fLeft">Shafieian Energieberatung & Consulting
+Hildegardstraße 3
+55131 Mainz</textarea>
+          </div>
+          <div>
+            <label>Footer Mitte Bank</label>
+            <textarea id="fMid">IBAN DE06100777770352261200
+BIC NORSDE51XXX</textarea>
+          </div>
+        </div>
+        <div>
+          <label>Footer rechte Spalte Steuer</label>
+          <textarea id="fRight">USt-ID DE4554966973</textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px">
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button class="btn" id="save">Daten speichern</button>
+            <button class="btn" id="load">Daten laden</button>
+            <button class="btn" id="reset">Zurücksetzen</button>
+          </div>
+          <button class="btn primary" id="print">PDF erstellen</button>
+        </div>
+        <div class="muted mobile-only" style="margin-top:6px">iPhone: Teilen → Drucken → Vorschau aufziehen → Teilen → In Dateien sichern</div>
+        <div class="mobile-bar">
+          <button class="btn" id="save2">Speichern</button>
+          <button class="btn primary" id="print2">PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card preview">
+      <h2>Vorschau</h2>
+      <div class="body">
+        <div class="doc posrel" id="doc">
+          <div class="paper">
+            <div class="head">
+              <div>
+                <div class="sender" id="vFirmLine">Musterfirma GmbH – Musterstr. 8 – 77777 Ort</div>
+                <div class="recipient" id="vRecipientBlock">Empfänger</div>
+              </div>
+              <div class="meta-grid">
+                <table>
+                  <tr><td class="label">Seite:</td><td class="value" id="vPage">1</td></tr>
+                  <tr><td class="label" id="vDocNumLabel">Angebotsnummer:</td><td class="value" id="vDocNumber"></td></tr>
+                  <tr><td class="label">Kunden Nr.:</td><td class="value" id="vCustomer"></td></tr>
+                  <tr><td class="label">Bearbeiter:</td><td class="value" id="vClerk"></td></tr>
+                  <tr><td class="label">Projekt Nr.:</td><td class="value" id="vProjectNo"></td></tr>
+                  <tr><td class="label">USt-IdNr.:</td><td class="value" id="vVatId"></td></tr>
+                  <tr><td class="label">Datum:</td><td class="value" id="vDate"></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="title" id="vTitle">Angebot</div>
+
+            <div class="intro"><strong><span id="vOfferHeaderLabel">Angebotsnummer</span> <span id="vDocNumber2"></span></strong></div>
+            <div class="intro"><strong>Betreff:</strong> <span id="vSubject"></span></div>
+
+            <div class="intro" id="vSalutation"></div>
+            <div class="intro" id="vIntro"></div>
+
+            <table class="tbl" id="vTable">
+              <thead>
+                <tr>
+                  <th class="col-pos">Pos</th>
+                  <th>Bezeichnung</th>
+                  <th class="col-qty">Menge</th>
+                  <th class="col-unit">Einheit</th>
+                  <th class="col-price">Einzelpreis</th>
+                  <th class="col-total">Gesamtpreis</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+
+            <div class="sumwrap" id="sumwrap">
+              <div class="sumrow"><span>Summe Positionen</span><span id="vSub"></span></div>
+              <div class="sumrow"><span>zzgl Umsatzsteuer <span id="vVatLabel"></span></span><span id="vVat"></span></div>
+              <div class="sumrow bold"><span id="vTotalLabel">Rechnungsbetrag</span><span id="vTotal"></span></div>
+            </div>
+
+            <div class="note" id="vNote"></div>
+
+            <div class="greet">
+              <div id="vGreet"></div>
+            </div>
+
+            <div class="footer">
+              <div id="vFLeft"></div>
+              <div id="vFMid"></div>
+              <div id="vFRight"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="rowTpl">
+    <tr>
+      <td class="col-pos"><span class="poswrap"><button class="xdel" title="Zeile löschen">×</button><span data-k="pos">1</span></span></td>
+      <td contenteditable="true" data-k="title">Position</td>
+      <td contenteditable="true" data-k="qty" class="col-qty">1</td>
+      <td contenteditable="true" data-k="unit" class="col-unit">Stück</td>
+      <td contenteditable="true" data-k="price" class="col-price">0,00</td>
+      <td class="col-total" data-k="sum"></td>
+      <td><button class="btn danger remove">Löschen</button></td>
+    </tr>
+  </template>
+
+  <script>
+    const $ = id => document.getElementById(id)
+
+    function nf(){
+      const cur = $('currency').value
+      const map = { EUR: 'EUR', USD: 'USD', GBP: 'GBP' }
+      return new Intl.NumberFormat('de-DE', { style: 'currency', currency: map[cur] || 'EUR' })
+    }
+
+    function pnum(s){
+      if(typeof s === 'number') return s
+      if(!s) return 0
+      s = (''+s).replace(/\./g,'').replace(',', '.')
+      return Number(s) || 0
+    }
+
+    function addRow(data){
+      const tbody = $('editTable').querySelector('tbody')
+      const tpl = $('rowTpl').content.cloneNode(true)
+      const tr = tpl.querySelector('tr')
+      tbody.appendChild(tr)
+      tr.querySelector('.remove').addEventListener('click', ()=>{ tr.remove(); render() })
+      ;['title','qty','unit','price'].forEach(k=>{
+        const cell = tr.querySelector(`[data-k="${k}"]`)
+        if(data && data[k] != null){
+          if(k==='price') cell.textContent = String(data[k])
+          else cell.textContent = data[k]
+        }
+        cell.addEventListener('input', render)
+      })
+      render()
+    }
+
+    function addSection(title=''){ 
+      const tbody = $('editTable').querySelector('tbody')
+      const tr = document.createElement('tr')
+      tr.setAttribute('data-type','section')
+      tr.className = 'row-section'
+      tr.innerHTML = `
+        <td class="col-pos"><span class="poswrap"><button class="xdel" title="Zeile löschen">×</button><span data-k="pos"></span></span></td>
+        <td contenteditable="true" data-k="title">${title||'Abschnittstitel'}</td>
+        <td data-k="qty"></td>
+        <td data-k="unit"></td>
+        <td data-k="price"></td>
+        <td data-k="sum"></td>
+        <td><button class="btn danger remove">Löschen</button></td>`
+      tbody.appendChild(tr)
+      tr.querySelector('.remove').addEventListener('click', ()=>{ tr.remove(); render() })
+      ;['pos','title'].forEach(k=> tr.querySelector(`[data-k="${k}"]`).addEventListener('input', render))
+      render()
+    }
+
+    function addSubtotal(){
+      const tbody = $('editTable').querySelector('tbody')
+      const trs = [...tbody.querySelectorAll('tr')]
+      // Summe seit letztem Abschnitt oder Zwischensumme
+      let subtotal = 0
+      for(let i=trs.length-1; i>=0; i--){
+        const t = trs[i].getAttribute('data-type') || 'item'
+        if(t==='subtotal' || t==='section') break
+        const qty = pnum(trs[i].querySelector('[data-k="qty"]')?.textContent)
+        const price = pnum(trs[i].querySelector('[data-k="price"]')?.textContent)
+        subtotal += (qty||0)*(price||0)
+      }
+      const tr = document.createElement('tr')
+      tr.setAttribute('data-type','subtotal')
+      tr.className = 'row-subtotal'
+      tr.innerHTML = `
+        <td class="col-pos"><span class="poswrap"><button class="xdel" title="Zeile löschen">×</button><span data-k="pos"></span></span></td>
+        <td colspan="4" data-k="title">Zwischensumme</td>
+        <td data-k="sum">${nf().format(subtotal)}</td>
+        <td><button class="btn danger remove">Löschen</button></td>`
+      tbody.appendChild(tr)
+      tr.querySelector('.remove').addEventListener('click', ()=>{ tr.remove(); render() })
+      render()
+    }
+
+    function collect(){
+      const rows = [...$('editTable').querySelectorAll('tbody tr')]
+      let runSum = 0
+      let idx = 0
+      return rows.map((r)=>{
+        const type = r.getAttribute('data-type') || 'item'
+        const title = (r.querySelector('[data-k="title"]')?.textContent || '').trim()
+        const qty = pnum(r.querySelector('[data-k="qty"]')?.textContent)
+        const unit = (r.querySelector('[data-k="unit"]')?.textContent || '').trim()
+        const price = pnum(r.querySelector('[data-k="price"]')?.textContent)
+        const posCell = r.querySelector('[data-k="pos"]')
+        let sum = 0
+
+        if(type === 'item'){
+          idx += 1
+          if(posCell) posCell.textContent = String(idx)
+          sum = (qty||0) * (price||0)
+          runSum += sum
+          const sumCell = r.querySelector('[data-k="sum"]')
+          if(sumCell) sumCell.textContent = nf().format(sum)
+        } else if(type === 'section'){
+          if(posCell) posCell.textContent = ''
+          runSum = 0
+          const sumCell = r.querySelector('[data-k="sum"]')
+          if(sumCell) sumCell.textContent = ''
+        } else if(type === 'subtotal'){
+          if(posCell) posCell.textContent = ''
+          sum = runSum
+          const sumCell = r.querySelector('[data-k="sum"]')
+          if(sumCell) sumCell.textContent = nf().format(sum)
+          runSum = 0
+        }
+
+        return { type, pos: posCell ? posCell.textContent.trim() : '', title, qty, unit, price, sum }
+      })
+    }
+
+    function render(){
+      if($('vFirmLine')) {
+        const n = ($('firmName').value || '').trim()
+        const l = ($('firmLine').value || '').trim()
+        $('vFirmLine').textContent = [n, l].filter(Boolean).join(' – ')
+      }
+
+      $('vTitle').textContent = $('docType').value === 'rechnung' ? 'Rechnung' : 'Angebot'
+      // Dynamically update labels based on docType
+      const isInvoice = $('docType').value === 'rechnung'
+      if($('vDocNumLabel')) $('vDocNumLabel').textContent = isInvoice ? 'Rechnungsnummer:' : 'Angebotsnummer:'
+      if($('vOfferHeaderLabel')) $('vOfferHeaderLabel').textContent = isInvoice ? 'Rechnungsnummer' : 'Angebotsnummer'
+      if($('vTotalLabel')) $('vTotalLabel').textContent = isInvoice ? 'Rechnungsbetrag' : 'Angebotsbetrag'
+
+      $('vDocNumber').textContent = $('docNumber').value || ''
+      $('vCustomer').textContent = $('customerNumber').value || ''
+      $('vDate').textContent = $('docDate').value || ''
+      $('vClerk').textContent = $('clerk').value || ''
+      $('vProjectNo').textContent = $('projectNo').value || ''
+      $('vVatId').textContent = $('vatId').value || ''
+      $('vSubject').textContent = $('subject').value || ''
+      $('vDocNumber2').textContent = $('docNumber').value || ''
+      $('vSalutation').textContent = $('salutation').value || ''
+
+      $('vRecipientBlock').textContent = $('recipient').value || ''
+      $('vIntro').textContent = $('intro').value || ''
+
+      const items = collect()
+      const vBody = $('vTable').querySelector('tbody')
+      vBody.innerHTML = ''
+      items.forEach((it)=>{
+        const tr = document.createElement('tr')
+        if(it.type==='section'){
+          tr.className = 'row-section'
+          tr.innerHTML = `
+            <td class="col-pos">${it.pos}</td>
+            <td colspan="5">${it.title}</td>`
+        } else if(it.type==='subtotal'){
+          tr.className = 'row-subtotal'
+          tr.innerHTML = `
+            <td class="col-pos">${it.pos||''}</td>
+            <td colspan="4">${it.title||'Zwischensumme'}</td>
+            <td class="col-total">${nf().format(it.sum||0)}</td>`
+        } else {
+          tr.innerHTML = `
+            <td class="col-pos">${it.pos}</td>
+            <td>${it.title}</td>
+            <td class="col-qty">${fmtNum(it.qty)}</td>
+            <td class="col-unit">${it.unit}</td>
+            <td class="col-price">${nf().format(it.price)}</td>
+            <td class="col-total">${nf().format(it.sum)}</td>`
+        }
+        vBody.appendChild(tr)
+      })
+
+      const sub = items.reduce((a,b)=>a+(b.type==='item'?b.sum:0),0)
+      const vatRate = pnum($('vatRate').value)
+      const vat = sub * vatRate / 100
+      const total = sub + vat
+
+      $('vSub').textContent = nf().format(sub)
+      $('vVat').textContent = nf().format(vat)
+      $('vVatLabel').textContent = `${vatRate}%`
+      $('vTotal').textContent = nf().format(total)
+
+      $('vNote').textContent = $('note').value || ''
+      $('vGreet').textContent = $('greet').value || ''
+      $('vFLeft').textContent = $('fLeft').value || ''
+      $('vFMid').textContent = $('fMid').value || ''
+      $('vFRight').textContent = $('fRight').value || ''
+    }
+
+    function fmtNum(n){
+      return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(n)
+    }
+
+    // Events
+    ;['docType','vatRate','docNumber','customerNumber','docDate','currency','firmName','firmLine','rightBox','recipient','intro','note','greet','fLeft','fMid','fRight'
+      ,'clerk','projectNo','vatId','subject','salutation']
+      .forEach(id=> $(id).addEventListener('input', render))
+
+    $('addItem').addEventListener('click', ()=> addRow())
+    $('clearItems').addEventListener('click', ()=>{ $('editTable').querySelector('tbody').innerHTML=''; render() })
+    $('addSection').addEventListener('click', ()=> addSection())
+    $('addSubtotal').addEventListener('click', ()=> addSubtotal())
+
+    // Delegierter Klick: linkes × löscht die jeweilige Zeile
+    $('editTable').addEventListener('click', (e)=>{
+      const btn = e.target.closest('.xdel')
+      if(btn){
+        const tr = btn.closest('tr')
+        if(tr){ tr.remove(); render() }
+      }
+    })
+
+    // Mobile editing helper: prompt for cell values on small screens
+    $('editTable').addEventListener('click', (e)=>{
+      if(!window.matchMedia('(max-width: 900px)').matches) return
+      const cell = e.target.closest('[data-k="qty"], [data-k="price"], [data-k="unit"], [data-k="title"]')
+      if(cell){
+        const labels = { qty: 'Menge', price: 'Einzelpreis', unit: 'Einheit', title: 'Bezeichnung' }
+        const k = cell.getAttribute('data-k')
+        const current = cell.textContent.trim()
+        const val = prompt(`${labels[k]||'Wert'} eingeben`, current)
+        if(val != null){ cell.textContent = val; render() }
+      }
+    })
+
+    $('print').addEventListener('click', ()=>{
+      render()
+      requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ window.print() }) })
+    })
+
+    if($('save2')) $('save2').addEventListener('click', ()=> $('save').click())
+    if($('print2')) $('print2').addEventListener('click', ()=> $('print').click())
+
+    // Speicher
+    $('save').addEventListener('click', ()=>{
+      const data = {
+        docType: $('docType').value, vatRate: $('vatRate').value, docNumber: $('docNumber').value,
+        customerNumber: $('customerNumber').value, docDate: $('docDate').value, currency: $('currency').value,
+        firmName: $('firmName').value, firmLine: $('firmLine').value, rightBox: $('rightBox').value,
+        recipient: $('recipient').value, intro: $('intro').value, note: $('note').value, greet: $('greet').value,
+        fLeft: $('fLeft').value, fMid: $('fMid').value, fRight: $('fRight').value,
+        clerk: $('clerk').value,
+        projectNo: $('projectNo').value,
+        vatId: $('vatId').value,
+        subject: $('subject').value,
+        salutation: $('salutation').value,
+        items: collect().map(({type,pos,title,qty,unit,price,sum})=>({type,pos,title,qty,unit,price,sum}))
+      }
+      localStorage.setItem('angebotData', JSON.stringify(data))
+      alert('Gespeichert')
+    })
+
+    $('load').addEventListener('click', ()=>{
+      const raw = localStorage.getItem('angebotData')
+      if(!raw){ alert('Keine gespeicherten Daten gefunden'); return }
+      const d = JSON.parse(raw)
+      Object.entries(d).forEach(([k,v])=>{
+        if($(k)) $(k).value = v
+      })
+      // Positionen laden
+      $('editTable').querySelector('tbody').innerHTML = ''
+      ;(d.items||[]).forEach(it=> addRow(it))
+      render()
+    })
+
+    $('reset').addEventListener('click', ()=>{ if(confirm('Alles zurücksetzen')) location.reload() })
+
+    // Init
+    $('docDate').valueAsNumber = Date.now() - new Date().getTimezoneOffset()*60000
+    addRow()
+    render()
+  </script>
+</body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(console.error)
+      })
+    }
+  </script>
+</html>
