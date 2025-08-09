@@ -289,7 +289,7 @@ Land</textarea>
         <input id="subject" placeholder="z B Wasserschaden Erstmaßnahmen" />
 
         <label>Anrede (für den Textteil, optional)</label>
-        <input id="salutation" placeholder="Sehr geehrte Damen und Herren," />
+        <input id="salutation" placeholder="Sehr geehrte Damen und Herren," value="Sehr geehrte Damen und Herren," />
 
         <h3 style="margin-top:12px">Einleitung</h3>
         <textarea id="intro">Vielen Dank für Ihr Interesse an unseren Leistungen. Hiermit unterbreiten wir Ihnen folgendes Angebot.</textarea>
@@ -349,12 +349,11 @@ BIC NORSDE51XXX</textarea>
             <button class="btn" id="load">Daten laden</button>
             <button class="btn" id="reset">Zurücksetzen</button>
           </div>
-          <button class="btn primary" id="print">PDF erstellen</button>
+          <button class="btn primary" id="print">Genrate PDF</button>
         </div>
         <div class="muted mobile-only" style="margin-top:6px">iPhone: Teilen → Drucken → Vorschau aufziehen → Teilen → In Dateien sichern</div>
         <div class="mobile-bar">
           <button class="btn" id="save2">Speichern</button>
-          <button class="btn primary" id="print2">PDF</button>
         </div>
       </div>
     </div>
@@ -700,7 +699,6 @@ BIC NORSDE51XXX</textarea>
     })
 
     if($('save2')) $('save2').addEventListener('click', ()=> $('save').click())
-    if($('print2')) $('print2').addEventListener('click', ()=> $('print').click())
 
     // Speicher
     $('save').addEventListener('click', ()=>{
@@ -728,6 +726,10 @@ BIC NORSDE51XXX</textarea>
       Object.entries(d).forEach(([k,v])=>{
         if($(k)) $(k).value = v
       })
+      // Fallback für Anrede bei alten Saves
+      if(!($('salutation').value||'').trim()){
+        $('salutation').value = 'Sehr geehrte Damen und Herren,'
+      }
       // Positionen laden
       $('editTable').querySelector('tbody').innerHTML = ''
       ;(d.items||[]).forEach(it=> addRow(it))
@@ -738,6 +740,9 @@ BIC NORSDE51XXX</textarea>
 
     // Init
     $('docDate').valueAsNumber = Date.now() - new Date().getTimezoneOffset()*60000
+    if(!$('salutation').value){
+      $('salutation').value = 'Sehr geehrte Damen und Herren,'
+    }
     addRow()
     render()
     setMobileView('preview')
